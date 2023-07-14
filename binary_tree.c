@@ -2,6 +2,8 @@
 #include <stdio.h>
 
 #include "binary_tree.h"
+#include "deque.h"
+#include "vector.h"
 
 KeyValPair *key_val_pair_construct(void *key, void *val) {
     KeyValPair *kvp = calloc(1, sizeof(KeyValPair));
@@ -236,11 +238,147 @@ void binary_tree_destroy(BinaryTree *bt) {
 // a funcao abaixo pode ser util para debug, mas nao eh obrigatoria.
 // void binary_tree_print(BinaryTree *bt);
 
-Vector *binary_tree_inorder_traversal(BinaryTree *bt);
-Vector *binary_tree_preorder_traversal(BinaryTree *bt);
-Vector *binary_tree_postorder_traversal(BinaryTree *bt);
-Vector *binary_tree_levelorder_traversal(BinaryTree *bt);
+void _deque_destroy_node(void *n) {
+    node_destroy((Node *)n);
+}
 
-Vector *binary_tree_inorder_traversal_recursive(BinaryTree *bt);
-Vector *binary_tree_preorder_traversal_recursive(BinaryTree *bt);
-Vector *binary_tree_postorder_traversal_recursive(BinaryTree *bt);
+Vector *binary_tree_inorder_traversal(BinaryTree *bt) {
+    Node *curr = bt->root;
+    Vector *vec = vector_construct();
+    // Using deque as a stack
+    Deque *stack = deque_construct(_deque_destroy_node);
+    
+    while (1) {
+        while (curr) {
+            deque_push_back(stack, curr);
+            curr = curr->left;
+        }
+        if (deque_size(stack) == 0) break;
+        else {
+            Node *aux = deque_pop_back(stack);
+            vector_push_back(vec, aux->kvp);
+            curr = aux->right;
+        }
+    }
+    deque_destroy(stack);
+    return vec;
+}
+
+Vector *binary_tree_preorder_traversal(BinaryTree *bt) {
+    Vector *vec = vector_construct();
+    
+    // Using deque as a stack
+    Deque *stack = deque_construct(_deque_destroy_node);
+    if (bt->root) deque_push_back(stack, bt->root);
+
+    while (deque_size(stack) > 0) {
+        Node *aux = deque_pop_back(stack);
+        vector_push_back(vec, aux->kvp);
+
+        if (aux->right) deque_push_back(stack, aux->right);
+        if (aux->left) deque_push_back(stack, aux->left);
+    }
+
+    deque_destroy(stack);
+
+    return vec;
+}
+
+Vector *binary_tree_postorder_traversal(BinaryTree *bt) {
+    Vector *vec = vector_construct();
+
+    // Using deques as stacks
+    Deque *q1 = deque_construct(_deque_destroy_node);
+    Deque *q2 = deque_construct(_deque_destroy_node);
+
+    if (bt->root) deque_push_back(q1, bt->root);
+
+    while (deque_size(q1) > 0) {
+        Node *aux = deque_pop_back(q1);
+        
+        if (aux->left) deque_push_back(q1, aux->left);
+        if (aux->right) deque_push_back(q1, aux->right);
+
+        deque_push_back(q2, aux);
+    }
+
+    while (deque_size(q2) > 0) {
+        Node *aux = deque_pop_back(q2);
+        vector_push_back(vec, aux->kvp);
+    }
+
+    deque_destroy(q1);
+    deque_destroy(q2);
+
+    return vec;
+}
+
+Vector *binary_tree_levelorder_traversal(BinaryTree *bt) {
+    Vector *vec = vector_construct();
+    // Using deque as a queue
+    Deque *queue = deque_construct(_deque_destroy_node);
+    
+    if (bt->root) deque_push_back(queue, bt->root);
+
+    while (deque_size(queue) > 0) {
+        Node *aux = deque_pop_front(queue);
+
+        if (aux) {
+            vector_push_back(vec, aux->kvp);
+            deque_push_back(queue, aux->left);
+            deque_push_back(queue, aux->right);
+        }
+    }
+
+    deque_destroy(queue);
+
+    return vec;
+}
+
+void _recursive_bt_inorder_traversal(Node *node, Vector *vec) {
+    if (!node) return;
+
+    _recursive_bt_inorder_traversal(node->left, vec);
+    vector_push_back(vec, node->kvp);
+    _recursive_bt_inorder_traversal(node->right, vec);
+}
+
+Vector *binary_tree_inorder_traversal_recursive(BinaryTree *bt) {
+    Vector *vec = vector_construct();
+
+    _recursive_bt_inorder_traversal(bt->root, vec);
+
+    return vec;
+}
+
+void _recursive_bt_preorder_traversal(Node *node, Vector *vec) {
+    if (!node) return;
+
+    vector_push_back(vec, node->kvp);
+    _recursive_bt_preorder_traversal(node->left, vec);
+    _recursive_bt_preorder_traversal(node->right, vec);
+}
+
+Vector *binary_tree_preorder_traversal_recursive(BinaryTree *bt) {
+    Vector *vec = vector_construct();
+
+    _recursive_bt_preorder_traversal(bt->root, vec);
+
+    return vec;
+}
+
+void _recursive_bt_postorder_traversal(Node *node, Vector *vec) {
+    if (!node) return;
+
+    _recursive_bt_postorder_traversal(node->left, vec);
+    _recursive_bt_postorder_traversal(node->right, vec);
+    vector_push_back(vec, node->kvp);
+}
+
+Vector *binary_tree_postorder_traversal_recursive(BinaryTree *bt) {
+    Vector *vec = vector_construct();
+
+    _recursive_bt_postorder_traversal(bt->root, vec);
+
+    return vec;
+}

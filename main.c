@@ -49,7 +49,6 @@ int main()
 {
     int i, n, idade;
     float altura;
-    char op[20];
     char nome[100];
 
     scanf("%d", &n);
@@ -58,35 +57,22 @@ int main()
 
     for (i = 0; i < n; i++)
     {
-        scanf("\n%s", op);
+        scanf("\nSET %s %d %f", nome, &idade, &altura);
+        binary_tree_add(bt, strdup(nome), person_construct(nome, idade, altura));
+    }
 
-        if (!strcmp(op, "SET"))
-        {
-            scanf("%s %d %f", nome, &idade, &altura);
-            binary_tree_add(bt, strdup(nome), person_construct(nome, idade, altura));
-        }
-        else
-        {
-            if (!binary_tree_empty(bt))
-            {
-                KeyValPair *pair;
+    Vector *v = binary_tree_postorder_traversal_recursive(bt);
 
-                if (!strcmp(op, "POP_MAX"))
-                    pair = binary_tree_pop_max(bt);
-                else
-                    pair = binary_tree_pop_min(bt);
-
-                Person *p = pair->value;
-                printf("%s %d %.2f\n", p->name, p->idade, p->altura);
-
-                key_val_pair_destroy(pair, key_destroy_fn, val_destroy_fn);
-            }
-            else
-                printf("ARVORE VAZIA\n");
-        }
+    for (i = 0; i < vector_size(v); i++)
+    {
+        KeyValPair *pair = vector_get(v, i);
+        Person *p = pair->value;
+        printf("%s %d %.2f\n", p->name, p->idade, p->altura);
+        //key_val_pair_destroy(pair);
     }
 
     binary_tree_destroy(bt);
+    vector_destroy(v);
 
     return 0;
 }
