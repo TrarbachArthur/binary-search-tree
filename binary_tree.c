@@ -69,10 +69,7 @@ void binary_tree_add(BinaryTree *bt, void *key, void *value) {
 }
 
 int binary_tree_empty(BinaryTree *bt) {
-    if (bt->root) {
-        return 0;
-    }
-    return 1;
+    return bt->root == NULL;
 }
 
 void binary_tree_remove(BinaryTree *bt, void *key) {
@@ -146,10 +143,63 @@ void binary_tree_remove(BinaryTree *bt, void *key) {
     }
 }
 
-KeyValPair *binary_tree_min(BinaryTree *bt);
-KeyValPair *binary_tree_max(BinaryTree *bt);
-KeyValPair *binary_tree_pop_min(BinaryTree *bt);
-KeyValPair *binary_tree_pop_max(BinaryTree *bt);
+KeyValPair *binary_tree_min(BinaryTree *bt) {
+    Node *curr = bt->root;
+
+    while (curr->left) { 
+        curr = curr->left;
+    }
+
+    return curr->kvp;
+}
+
+KeyValPair *binary_tree_max(BinaryTree *bt) {
+    Node *curr = bt->root;
+
+    while (curr->right) {
+        curr = curr->right;
+    }
+
+    return curr->kvp;
+}
+
+KeyValPair *binary_tree_pop_min(BinaryTree *bt) {
+    Node *curr = bt->root;
+    Node *prev = NULL;
+
+    while (curr->left) {
+        prev = curr;    
+        curr = curr->left;
+    }
+
+    if (prev) prev->left = curr->right;
+    else bt->root = curr->right;
+
+    KeyValPair *kvp = curr->kvp;
+    node_destroy(curr);
+
+    return kvp;
+}
+
+KeyValPair *binary_tree_pop_max(BinaryTree *bt) {
+    {
+    Node *curr = bt->root;
+    Node *prev = NULL;
+
+    while (curr->right) {
+        prev = curr;    
+        curr = curr->right;
+    }
+
+    if (prev) prev->right = curr->left;
+    else bt->root = curr->left;
+
+    KeyValPair *kvp = curr->kvp;
+    node_destroy(curr);
+
+    return kvp;
+}
+}
 
 void *_recursive_bt_get(BinaryTree *bt, Node *node, void *key) {
     if (!node) return NULL;
